@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/widget_bg" android:orientation="vertical" android:gravity="center_vertical" android:paddingLeft="23dp" android:paddingRight="23dp" android:paddingTop="12dp" android:paddingBottom="12dp">
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+<TextView android:id="@+id/widget_emoji" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="💗" android:textSize="24sp"/>
+<TextView android:id="@+id/widget_title" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:layout_marginLeft="8dp" android:text="我们的纪念日" android:textSize="16sp" android:textStyle="bold" android:textColor="#734254" android:maxLines="1" android:ellipsize="end"/>
+</LinearLayout>
+<TextView android:id="@+id/widget_days" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:text="— 天" android:textColor="#BC4A72" android:textStyle="bold" android:textSize="42sp"/>
+<TextView android:id="@+id/widget_caption" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="每一天都值得纪念" android:textSize="12sp" android:textColor="#A86E82" android:maxLines="1" android:ellipsize="end"/>
+</LinearLayout>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<application android:label="念念日" android:icon="@drawable/app_icon" android:roundIcon="@drawable/app_icon" android:allowBackup="false" android:supportsRtl="true" android:theme="@android:style/Theme.Material.Light.NoActionBar">
+  <activity android:name=".MainActivity" android:exported="true" android:windowSoftInputMode="adjustResize">
+    <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+  </activity>
+  <activity android:name=".ConfigActivity" android:exported="true"/>
+  <receiver android:name=".Widgets$Compact" android:exported="true">
+    <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE"/></intent-filter>
+    <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_compact_info"/>
+  </receiver>
+  <receiver android:name=".Widgets$Wide" android:exported="true">
+    <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE"/></intent-filter>
+    <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_wide_info"/>
+  </receiver>
+  <receiver android:name=".Widgets$DayChanged" android:exported="false">
+    <intent-filter>
+       <action android:name="android.intent.action.TIME_SET"/>
+       <action android:name="android.intent.action.TIMEZONE_CHANGED"/>
+       <action android:name="android.intent.action.DATE_CHANGED"/>
+    </intent-filter>
+  </receiver>
+</application>
+</manifest>
