@@ -1,0 +1,60 @@
+name: Build Interaction Cleaner v2.2 APK
+on:
+  push:
+    branches: [douyin-interaction-cleaner-2026]
+    paths:
+      - 'interaction_cleaner_v2_2_source.b64'
+      - '.github/workflows/douyin-cleaner-v22.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Restore Android app
+        run: |
+          mkdir -p interaction-cleaner-2.2
+          base64 -d interaction_cleaner_v2_2_source.b64 | tar -xz -C interaction-cleaner-2.2
+          test -f interaction-cleaner-2.2/app/src/main/java/com/ranyu/cleaner/CleanerService.java
+      - name: Build debug APK
+        run: gradle --no-daemon -p interaction-cleaner-2.2 :app:assembleDebug
+      - name: Verify and stage APK
+        run: |
+          APK=interaction-cleaner-2.2/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify "$APK"
+          cp "$APK" InteractionCleaner-v2.2.0.apk
+          sha256sum InteractionCleaner-v2.2.0.apk | tee InteractionCleaner-v2.2.0.apk.sha256
+          ls -lh InteractionCleaner-v2.2.0.apk
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: InteractionCleaner-v2.2.0-APK
+          path: |
+            InteractionCleaner-v2.2.0.apk
+            InteractionCleaner-v2.2.0.apk.sha256
+          retention-days: 30
+          if-no-files-found: error
+      - name: Publish APK as text for accessible retrieval
+        run: |
+          mkdir -p release
+          base64 -w 0 InteractionCleaner-v2.2.0.apk > release/InteractionCleaner-v2.2.0.apk.b64
+          cp InteractionCleaner-v2.2.0.apk.sha256 release/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add release/InteractionCleaner-v2.2.0.apk.b64 release/InteractionCleaner-v2.2.0.apk.sha256
+          git diff --cached --quiet || (git commit -m 'build: publish Interaction Cleaner v2.2 apk' && git push)
