@@ -1,0 +1,70 @@
+name: Build 江湖万刃录 Android APK
+on:
+  push:
+    branches: [jianghu-wanrenlu-2026]
+    paths:
+      - 'jianghu_source_v01.b64'
+      - '.github/workflows/jianghu-build.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+        with:
+          ref: jianghu-wanrenlu-2026
+          persist-credentials: true
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Setup Gradle 8.11.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Verify Android SDK 35
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          test -d "$ANDROID_HOME"
+          if command -v sdkmanager >/dev/null 2>&1; then
+            yes | sdkmanager --licenses >/dev/null || true
+            sdkmanager "platforms;android-35" "build-tools;35.0.0" || true
+          fi
+      - name: Unpack original game
+        run: |
+          mkdir -p jianghu-app
+          base64 -d jianghu_source_v01.b64 | tar -xz -C jianghu-app
+          test -f jianghu-app/app/src/main/assets/game.js
+          test -f jianghu-app/app/src/main/java/com/ranyu/jianghu/MainActivity.java
+      - name: Build debug APK
+        run: gradle --no-daemon -p jianghu-app :app:assembleDebug
+      - name: Verify APK signing and prepare download
+        run: |
+          mkdir -p builds
+          cp jianghu-app/app/build/outputs/apk/debug/app-debug.apk builds/JiangHuWanRenLu-v0.1.0.apk
+          test -s builds/JiangHuWanRenLu-v0.1.0.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify builds/JiangHuWanRenLu-v0.1.0.apk
+          sha256sum builds/JiangHuWanRenLu-v0.1.0.apk > builds/JiangHuWanRenLu-v0.1.0.sha256
+          ls -lh builds/JiangHuWanRenLu-v0.1.0.apk
+      - name: Upload APK as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: JiangHuWanRenLu-v0.1.0-Android
+          path: |
+            builds/JiangHuWanRenLu-v0.1.0.apk
+            builds/JiangHuWanRenLu-v0.1.0.sha256
+          retention-days: 30
+          if-no-files-found: error
+      - name: Publish direct-download APK to branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add builds/JiangHuWanRenLu-v0.1.0.apk builds/JiangHuWanRenLu-v0.1.0.sha256
+          if ! git diff --cached --quiet; then
+            git commit -m "build: publish JiangHuWanRenLu installable APK [skip ci]"
+            git push origin HEAD:jianghu-wanrenlu-2026
+          fi
